@@ -22,15 +22,26 @@ def load_data(data_url: str) -> pd.DataFrame:
 
 def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     try:
-        df.drop(columns=['tweet_id'], inplace=True)
-        final_df = df[df['sentiment'].isin(['happiness', 'sadness'])]
-        final_df['sentiment'].replace({'happiness': 1, 'sadness': 0}, inplace=True)
+        # Drop column safely (avoid inplace)
+        df = df.drop(columns=['tweet_id'])
+
+        # Filter only required sentiments + create independent copy
+        final_df = df[df['sentiment'].isin(['happiness', 'sadness'])].copy()
+
+        # Convert labels to numeric
+        final_df['sentiment'] = final_df['sentiment'].replace({
+            'happiness': 1,
+            'sadness': 0
+        })
+
         return final_df
+
     except KeyError as e:
         print(f"Error: Missing column {e} in the dataframe.")
         raise
+
     except Exception as e:
-        print(f"Error: An unexpected error occurred during preprocessing.")
+        print("Error: An unexpected error occurred during preprocessing.")
         print(e)
         raise
 
